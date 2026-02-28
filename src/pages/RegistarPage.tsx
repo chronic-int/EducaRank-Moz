@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { GraduationCap, Mail, Lock, ArrowRight } from "lucide-react";
+import { GraduationCap, Mail, Lock, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,27 +9,39 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 
-const LoginPage = () => {
+const RegistarPage = () => {
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegistar = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !senha) {
+    if (!nome || !email || !senha) {
       toast.error("Preencha todos os campos.");
       return;
     }
+    if (senha.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password: senha,
+      options: {
+        data: { display_name: nome },
+        emailRedirectTo: window.location.origin,
+      },
+    });
     setLoading(false);
     if (error) {
       toast.error(error.message);
       return;
     }
-    toast.success("Login realizado com sucesso!");
-    navigate("/");
+    toast.success("Conta criada! Verifique o seu email para confirmar.");
+    navigate("/login");
   };
 
   const handleGoogleLogin = async () => {
@@ -57,8 +69,8 @@ const LoginPage = () => {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-accent text-accent-foreground mb-4">
               <GraduationCap className="h-7 w-7" />
             </div>
-            <h1 className="text-2xl font-bold">Entrar no EducaRank</h1>
-            <p className="text-sm text-muted-foreground mt-1">Faça login para avaliar instituições</p>
+            <h1 className="text-2xl font-bold">Criar Conta</h1>
+            <p className="text-sm text-muted-foreground mt-1">Junte-se à comunidade EducaRank</p>
           </div>
 
           {/* Social Login */}
@@ -75,7 +87,7 @@ const LoginPage = () => {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Continuar com Google
+              Registar com Google
             </Button>
           </div>
 
@@ -88,7 +100,20 @@ const LoginPage = () => {
             </div>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleRegistar} className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Nome</label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Seu nome completo"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
             <div>
               <label className="text-sm font-medium mb-1.5 block">Email</label>
               <div className="relative">
@@ -108,7 +133,7 @@ const LoginPage = () => {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="password"
-                  placeholder="••••••••"
+                  placeholder="Mínimo 6 caracteres"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   className="pl-10"
@@ -116,14 +141,14 @@ const LoginPage = () => {
               </div>
             </div>
             <Button type="submit" className="w-full h-11" disabled={loading}>
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Criando conta..." : "Criar Conta"}
             </Button>
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Não tem conta?{" "}
-            <Link to="/registar" className="text-primary font-semibold hover:underline">
-              Criar conta grátis <ArrowRight className="inline h-3.5 w-3.5" />
+            Já tem conta?{" "}
+            <Link to="/login" className="text-primary font-semibold hover:underline">
+              Entrar
             </Link>
           </p>
         </motion.div>
@@ -132,4 +157,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegistarPage;

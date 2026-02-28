@@ -1,15 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X, LogOut, UserCircle } from "lucide-react";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   const links = [
     { to: "/", label: "Ranking" },
     { to: "/instituicoes", label: "Instituições" },
-    { to: "/login", label: "Login" },
+    { to: "/sobre", label: "Sobre" },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -37,6 +41,29 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          <div className="ml-3 flex items-center gap-2">
+            {user ? (
+              <>
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <UserCircle className="h-4 w-4" />
+                  {user.email?.split("@")[0]}
+                </span>
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-1" /> Sair
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/login">Entrar</Link>
+                </Button>
+                <Button size="sm" asChild className="font-semibold">
+                  <Link to="/registar">Criar Conta</Link>
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu button */}
@@ -49,24 +76,49 @@ const Navbar = () => {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden border-t bg-card px-4 pb-4 animate-fade-in">
-          {links.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={() => setMenuOpen(false)}
-              className={`block px-4 py-2.5 rounded-md text-sm font-medium mt-1 ${
-                isActive(link.to)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden border-t bg-card px-4 pb-4 overflow-hidden"
+          >
+            {links.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                onClick={() => setMenuOpen(false)}
+                className={`block px-4 py-2.5 rounded-md text-sm font-medium mt-1 ${
+                  isActive(link.to)
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+
+            <div className="mt-3 pt-3 border-t space-y-2">
+              {user ? (
+                <Button variant="outline" size="sm" className="w-full" onClick={() => { signOut(); setMenuOpen(false); }}>
+                  <LogOut className="h-4 w-4 mr-1" /> Sair
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" className="w-full" asChild>
+                    <Link to="/login" onClick={() => setMenuOpen(false)}>Entrar</Link>
+                  </Button>
+                  <Button size="sm" className="w-full font-semibold" asChild>
+                    <Link to="/registar" onClick={() => setMenuOpen(false)}>Criar Conta</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
