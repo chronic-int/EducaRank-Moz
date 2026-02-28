@@ -1,0 +1,125 @@
+import { Instituicao } from "@/types";
+
+export const instituicoesMock: Instituicao[] = [
+  {
+    id: "1",
+    nome: "Universidade Eduardo Mondlane",
+    tipo: "Universidade",
+    distrito: "KaMpfumo",
+    media: 4.3,
+    total_avaliacoes: 187,
+    avaliacoes: [
+      { id: "a1", autor: "Carlos M.", nota: 5, comentario: "Excelente formação académica e boa infraestrutura.", data: "2025-12-10" },
+      { id: "a2", autor: "Ana S.", nota: 4, comentario: "Bons professores, mas as instalações precisam de melhorias.", data: "2025-11-28" },
+      { id: "a3", autor: "João P.", nota: 4, comentario: "Referência em Moçambique. Recomendo.", data: "2025-11-15" },
+    ],
+  },
+  {
+    id: "2",
+    nome: "Universidade Pedagógica",
+    tipo: "Universidade",
+    distrito: "KaMaxaqueni",
+    media: 4.0,
+    total_avaliacoes: 142,
+    avaliacoes: [
+      { id: "b1", autor: "Maria L.", nota: 4, comentario: "Ótima para formação de professores.", data: "2025-12-05" },
+      { id: "b2", autor: "Pedro R.", nota: 4, comentario: "Ambiente académico agradável.", data: "2025-11-20" },
+    ],
+  },
+  {
+    id: "3",
+    nome: "Instituto Superior de Transportes e Comunicações",
+    tipo: "Instituto",
+    distrito: "KaMpfumo",
+    media: 4.1,
+    total_avaliacoes: 98,
+    avaliacoes: [
+      { id: "c1", autor: "Rui T.", nota: 5, comentario: "Cursos muito relevantes para o mercado.", data: "2025-12-01" },
+      { id: "c2", autor: "Fátima N.", nota: 3, comentario: "Poderia ter mais cursos disponíveis.", data: "2025-11-18" },
+    ],
+  },
+  {
+    id: "4",
+    nome: "Escola Secundária Josina Machel",
+    tipo: "Escola Secundária",
+    distrito: "KaMpfumo",
+    media: 4.5,
+    total_avaliacoes: 210,
+    avaliacoes: [
+      { id: "d1", autor: "Helena M.", nota: 5, comentario: "A melhor escola secundária de Maputo!", data: "2025-12-08" },
+      { id: "d2", autor: "David C.", nota: 4, comentario: "Excelentes resultados nos exames nacionais.", data: "2025-11-25" },
+    ],
+  },
+  {
+    id: "5",
+    nome: "Escola Secundária Francisco Manyanga",
+    tipo: "Escola Secundária",
+    distrito: "KaMavota",
+    media: 3.9,
+    total_avaliacoes: 156,
+    avaliacoes: [
+      { id: "e1", autor: "Teresa A.", nota: 4, comentario: "Boa escola com professores dedicados.", data: "2025-12-03" },
+      { id: "e2", autor: "Manuel F.", nota: 3, comentario: "Infraestrutura precisa de renovação.", data: "2025-11-22" },
+    ],
+  },
+  {
+    id: "6",
+    nome: "Universidade Politécnica",
+    tipo: "Universidade",
+    distrito: "KaMpfumo",
+    media: 3.7,
+    total_avaliacoes: 89,
+    avaliacoes: [
+      { id: "f1", autor: "Sandra V.", nota: 4, comentario: "Bons cursos de engenharia.", data: "2025-12-06" },
+      { id: "f2", autor: "Jorge B.", nota: 3, comentario: "Precisa melhorar os laboratórios.", data: "2025-11-30" },
+    ],
+  },
+  {
+    id: "7",
+    nome: "Instituto Superior de Ciências e Tecnologia de Moçambique",
+    tipo: "Instituto",
+    distrito: "KaMpfumo",
+    media: 4.2,
+    total_avaliacoes: 115,
+    avaliacoes: [
+      { id: "g1", autor: "Luísa D.", nota: 5, comentario: "Excelente infraestrutura moderna.", data: "2025-12-04" },
+      { id: "g2", autor: "Alberto G.", nota: 4, comentario: "Cursos actualizados e relevantes.", data: "2025-11-27" },
+    ],
+  },
+  {
+    id: "8",
+    nome: "Escola Secundária da Polana",
+    tipo: "Escola Secundária",
+    distrito: "KaMpfumo",
+    media: 3.6,
+    total_avaliacoes: 78,
+    avaliacoes: [
+      { id: "h1", autor: "Rosa M.", nota: 4, comentario: "Escola com história e tradição.", data: "2025-12-02" },
+      { id: "h2", autor: "Ernesto J.", nota: 3, comentario: "Turmas muito grandes.", data: "2025-11-19" },
+    ],
+  },
+  {
+    id: "9",
+    nome: "Instituto Superior de Artes e Cultura",
+    tipo: "Instituto",
+    distrito: "KaMaxaqueni",
+    media: 3.8,
+    total_avaliacoes: 64,
+    avaliacoes: [
+      { id: "i1", autor: "Celeste R.", nota: 4, comentario: "Único na sua área em Moçambique.", data: "2025-12-07" },
+      { id: "i2", autor: "Tomás S.", nota: 4, comentario: "Ambiente criativo e inspirador.", data: "2025-11-24" },
+    ],
+  },
+  {
+    id: "10",
+    nome: "Universidade São Tomás de Moçambique",
+    tipo: "Universidade",
+    distrito: "KaMpfumo",
+    media: 3.5,
+    total_avaliacoes: 72,
+    avaliacoes: [
+      { id: "j1", autor: "Beatriz L.", nota: 3, comentario: "Razoável, mas com potencial de melhoria.", data: "2025-12-09" },
+      { id: "j2", autor: "Nuno P.", nota: 4, comentario: "Professores qualificados.", data: "2025-11-26" },
+    ],
+  },
+];
