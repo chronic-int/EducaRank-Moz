@@ -2,8 +2,10 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, BarChart3, GraduationCap, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import NotaBadge from "@/components/NotaBadge";
 import PosicaoBadge from "@/components/PosicaoBadge";
@@ -18,12 +20,18 @@ const Index = () => {
   const [busca, setBusca] = useState("");
   const { user } = useAuth();
 
+  const { data: rawInstituicoes, isLoading } = useQuery({
+    queryKey: ['instituicoes'],
+    queryFn: getInstituicoes,
+  });
+
   const instituicoes = useMemo(() => {
-    let list = getInstituicoes();
-    if (filtroTipo !== "Todos") list = list.filter((i) => i.tipo === filtroTipo);
-    if (busca.trim()) list = list.filter((i) => i.nome.toLowerCase().includes(busca.toLowerCase()));
+    if (!rawInstituicoes) return [];
+    let list = [...rawInstituicoes];
+    if (filtroTipo !== "Todos") list = list.filter((i) => i.type === filtroTipo);
+    if (busca.trim()) list = list.filter((i) => i.name.toLowerCase().includes(busca.toLowerCase()));
     return list;
-  }, [filtroTipo, busca]);
+  }, [rawInstituicoes, filtroTipo, busca]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,7 +123,7 @@ const Index = () => {
       <section className="container py-10">
         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
           <GraduationCap className="h-5 w-5 text-primary" />
-          Top {instituicoes.length} Instituições
+          Ranking das Instituições
         </h2>
 
         <div className="bg-card rounded-xl card-shadow overflow-hidden">
@@ -128,46 +136,58 @@ const Index = () => {
             <span className="text-right">Avaliações</span>
           </div>
 
-          {instituicoes.length === 0 && (
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex gap-4 items-center">
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-[40%]" />
+                    <Skeleton className="h-3 w-[20%]" />
+                  </div>
+                  <Skeleton className="h-10 w-20" />
+                </div>
+              ))}
+            </div>
+          ) : instituicoes.length === 0 ? (
             <div className="py-12 text-center text-muted-foreground">Nenhuma instituição encontrada.</div>
-          )}
-
-          {instituicoes.map((inst, idx) => (
-            <motion.div
-              key={inst.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.04, duration: 0.35 }}
-            >
-              <Link
-                to={`/instituicao/${inst.id}`}
-                className={`grid grid-cols-1 md:grid-cols-[60px_1fr_160px_80px_120px] gap-2 md:gap-4 px-6 py-4 border-b last:border-b-0 items-center hover:bg-muted/40 transition-colors ${
-                  idx < 3 ? "bg-accent/30" : ""
-                }`}
+          ) : (
+            instituicoes.map((inst, idx) => (
+              <motion.div
+                key={inst.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.04, duration: 0.35 }}
               >
-                <div className="flex items-center gap-3 md:block">
-                  <PosicaoBadge posicao={idx + 1} />
-                  <span className="md:hidden font-semibold text-foreground">{inst.nome}</span>
-                </div>
-                <div className="hidden md:flex flex-col">
-                  <span className="font-semibold text-foreground">{inst.nome}</span>
-                  <span className="text-xs text-muted-foreground">{inst.distrito}</span>
-                </div>
-                <div>
-                  <span className="text-xs md:text-sm font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
-                    {inst.tipo}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <NotaBadge nota={inst.media} size="sm" />
-                  <span className="md:hidden"><StarRating rating={inst.media} size="sm" /></span>
-                </div>
-                <div className="text-sm text-muted-foreground md:text-right">
-                  {inst.total_avaliacoes} avaliações
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                <Link
+                  to={`/instituicao/${inst.id}`}
+                  className={`grid grid-cols-1 md:grid-cols-[60px_1fr_160px_80px_120px] gap-2 md:gap-4 px-6 py-4 border-b last:border-b-0 items-center hover:bg-muted/40 transition-colors ${idx < 3 ? "bg-accent/30" : ""
+                    }`}
+                >
+                  <div className="flex items-center gap-3 md:block">
+                    <PosicaoBadge posicao={idx + 1} />
+                    <span className="md:hidden font-semibold text-foreground">{inst.name}</span>
+                  </div>
+                  <div className="hidden md:flex flex-col">
+                    <span className="font-semibold text-foreground">{inst.name}</span>
+                    <span className="text-xs text-muted-foreground">{inst.district}</span>
+                  </div>
+                  <div>
+                    <span className="text-xs md:text-sm font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+                      {inst.type}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <NotaBadge nota={inst.average_rating} size="sm" />
+                    <span className="md:hidden"><StarRating rating={inst.average_rating} size="sm" /></span>
+                  </div>
+                  <div className="text-sm text-muted-foreground md:text-right">
+                    {inst.total_reviews} avaliações
+                  </div>
+                </Link>
+              </motion.div>
+            ))
+          )}
         </div>
       </section>
 

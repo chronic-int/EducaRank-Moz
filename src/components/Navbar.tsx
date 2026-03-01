@@ -32,11 +32,10 @@ const Navbar = () => {
             <Link
               key={link.to}
               to={link.to}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive(link.to)
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive(link.to)
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted"
-              }`}
+                }`}
             >
               {link.label}
             </Link>
@@ -45,9 +44,18 @@ const Navbar = () => {
           <div className="ml-3 flex items-center gap-2">
             {user ? (
               <>
-                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <Link
+                  to="/dashboard"
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive("/dashboard")
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                >
+                  Painel
+                </Link>
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5 ml-2">
                   <UserCircle className="h-4 w-4" />
-                  {user.email?.split("@")[0]}
+                  {profile?.full_name || user.email?.split("@")[0]}
                 </span>
                 <Button variant="ghost" size="sm" onClick={signOut}>
                   <LogOut className="h-4 w-4 mr-1" /> Sair
@@ -90,11 +98,10 @@ const Navbar = () => {
                 key={link.to}
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
-                className={`block px-4 py-2.5 rounded-md text-sm font-medium mt-1 ${
-                  isActive(link.to)
+                className={`block px-4 py-2.5 rounded-md text-sm font-medium mt-1 ${isActive(link.to)
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                }`}
+                  }`}
               >
                 {link.label}
               </Link>

@@ -1,28 +1,43 @@
 import { useParams, Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, MapPin, Users, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import Navbar from "@/components/Navbar";
 import NotaBadge from "@/components/NotaBadge";
 import StarRating from "@/components/StarRating";
 import AvaliacaoModal from "@/components/AvaliacaoModal";
 import { getInstituicaoById, getDistribuicaoNotas } from "@/services/instituicaoService";
-import { Instituicao } from "@/types";
 
 const InstituicaoPage = () => {
   const { id } = useParams<{ id: string }>();
-  const [instituicao, setInstituicao] = useState<Instituicao | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      const data = getInstituicaoById(id);
-      if (data) setInstituicao({ ...data });
-    }
-  }, [id]);
+  const { data: instituicao, isLoading, isError } = useQuery({
+    queryKey: ['instituicao', id],
+    queryFn: () => getInstituicaoById(id || ""),
+    enabled: !!id,
+  });
 
-  if (!instituicao) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="container py-8">
+          <Skeleton className="h-6 w-32 mb-6" />
+          <Skeleton className="h-64 w-full rounded-xl mb-6" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-96 rounded-xl" />
+            <Skeleton className="lg:col-span-2 h-96 rounded-xl" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !instituicao) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -31,7 +46,8 @@ const InstituicaoPage = () => {
     );
   }
 
-  const distribuicao = getDistribuicaoNotas(instituicao.avaliacoes);
+  const reviews = instituicao.reviews || [];
+  const distribuicao = getDistribuicaoNotas(reviews);
   const maxDist = Math.max(...distribuicao, 1);
 
   return (
@@ -53,17 +69,17 @@ const InstituicaoPage = () => {
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             <div className="flex-1">
               <span className="text-xs font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
-                {instituicao.tipo}
+                {instituicao.type}
               </span>
-              <h1 className="text-2xl md:text-3xl font-extrabold mt-3 mb-2 text-foreground">{instituicao.nome}</h1>
+              <h1 className="text-2xl md:text-3xl font-extrabold mt-3 mb-2 text-foreground">{instituicao.name}</h1>
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {instituicao.distrito}, Maputo</span>
-                <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" /> {instituicao.total_avaliacoes} avaliações</span>
+                <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" /> {instituicao.district}, Maputo</span>
+                <span className="inline-flex items-center gap-1"><Users className="h-4 w-4" /> {instituicao.total_reviews} avaliações</span>
               </div>
             </div>
             <div className="flex flex-col items-center gap-2">
-              <NotaBadge nota={instituicao.media} size="lg" />
-              <StarRating rating={instituicao.media} size="md" />
+              <NotaBadge nota={instituicao.average_rating} size="lg" />
+              <StarRating rating={instituicao.average_rating} size="md" />
             </div>
           </div>
         </motion.div>
@@ -86,9 +102,8 @@ const InstituicaoPage = () => {
                       initial={{ width: 0 }}
                       animate={{ width: `${(distribuicao[n - 1] / maxDist) * 100}%` }}
                       transition={{ delay: 0.3 + n * 0.08, duration: 0.5, ease: "easeOut" }}
-                      className={`h-full rounded-full ${
-                        n >= 4 ? "bg-success" : n === 3 ? "bg-warning" : "bg-danger"
-                      }`}
+                      className={`h-full rounded-full ${n >= 4 ? "bg-success" : n === 3 ? "bg-warning" : "bg-danger"
+                        }`}
                     />
                   </div>
                   <span className="text-sm text-muted-foreground w-6 text-right">{distribuicao[n - 1]}</span>
@@ -110,25 +125,29 @@ const InstituicaoPage = () => {
           >
             <h3 className="font-semibold mb-4 flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
-              Comentários ({instituicao.avaliacoes.length})
+              Comentários ({reviews.length})
             </h3>
             <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
-              {instituicao.avaliacoes.map((av, i) => (
-                <motion.div
-                  key={av.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.06, duration: 0.3 }}
-                  className="border rounded-lg p-4"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm">{av.autor}</span>
-                    <span className="text-xs text-muted-foreground">{av.data}</span>
-                  </div>
-                  <StarRating rating={av.nota} size="sm" />
-                  {av.comentario && <p className="text-sm text-muted-foreground mt-2">{av.comentario}</p>}
-                </motion.div>
-              ))}
+              {reviews.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Ainda não existem comentários para esta instituição.</p>
+              ) : (
+                reviews.map((av: any, i) => (
+                  <motion.div
+                    key={av.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.06, duration: 0.3 }}
+                    className="border rounded-lg p-4"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm">{av.profile?.full_name || "Utilizador"}</span>
+                      <span className="text-xs text-muted-foreground">{new Date(av.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <StarRating rating={av.rating} size="sm" />
+                    {av.comment && <p className="text-sm text-muted-foreground mt-2">{av.comment}</p>}
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>
@@ -138,7 +157,6 @@ const InstituicaoPage = () => {
         instituicao={instituicao}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onUpdate={setInstituicao}
       />
     </div>
   );

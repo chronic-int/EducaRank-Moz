@@ -1,57 +1,100 @@
-import { Instituicao, Avaliacao } from "@/types";
-import { instituicoesMock } from "@/data/instituicoes";
+import { Instituicao } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
-let instituicoes: Instituicao[] = JSON.parse(JSON.stringify(instituicoesMock));
+export async function getInstituicoes(): Promise<Instituicao[]> {
+  const { data, error } = await supabase
+    .from('institutions')
+    .select('*, reviews(*, profile:profiles(*))')
+    .order('average_rating', { ascending: false });
 
-export function getInstituicoes(): Instituicao[] {
-  return [...instituicoes].sort((a, b) => b.media - a.media);
+  if (error) {
+    console.error("Erro ao buscar instituições:", error);
+    return [];
+  }
+
+  return (data as any) || [];
 }
 
-export function getInstituicaoById(id: string): Instituicao | undefined {
-  return instituicoes.find((i) => i.id === id);
+export async function getInstituicaoById(id: string): Promise<Instituicao | null> {
+  const { data, error } = await supabase
+    .from('institutions')
+    .select('*, reviews(*, profile:profiles(*))')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error(`Erro ao buscar instituição ${id}:`, error);
+    return null;
+  }
+
+  return (data as any) || null;
 }
 
-export function getInstituicoesByTipo(tipo: string): Instituicao[] {
-  if (!tipo || tipo === "Todos") return getInstituicoes();
-  return getInstituicoes().filter((i) => i.tipo === tipo);
+export async function getInstituicoesByTipo(tipo: string): Promise<Instituicao[]> {
+  let query = supabase
+    .from('institutions')
+    .select('*, reviews(*, profile:profiles(*))')
+    .order('average_rating', { ascending: false });
+
+  if (tipo && tipo !== "Todos") {
+    query = query.eq('type', tipo);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(`Erro ao buscar instituições do tipo ${tipo}:`, error);
+    return [];
+  }
+
+  return (data as any) || [];
 }
 
-export function buscarInstituicoes(query: string): Instituicao[] {
-  const q = query.toLowerCase();
-  return getInstituicoes().filter((i) => i.nome.toLowerCase().includes(q));
+export async function buscarInstituicoes(searchQuery: string): Promise<Instituicao[]> {
+  const { data, error } = await supabase
+    .from('institutions')
+    .select('*, reviews(*, profile:profiles(*))')
+    .ilike('name', `%${searchQuery}%`)
+    .order('average_rating', { ascending: false });
+
+  if (error) {
+    console.error(`Erro ao buscar instituições por "${searchQuery}":`, error);
+    return [];
+  }
+
+  return (data as any) || [];
 }
 
-export function adicionarAvaliacao(
-  instituicaoId: string,
-  nota: number,
-  comentario: string,
-  autor: string = "Utilizador Anónimo"
-): Instituicao | undefined {
-  const inst = instituicoes.find((i) => i.id === instituicaoId);
-  if (!inst) return undefined;
+export async function adicionarAvaliacao(
+  institutionId: string,
+  rating: number,
+  comment: string
+): Promise<boolean> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
 
-  const novaAvaliacao: Avaliacao = {
-    id: `av-${Date.now()}`,
-    autor,
-    nota,
-    comentario,
-    data: new Date().toISOString().split("T")[0],
-  };
+  const { error } = await supabase
+    .from('reviews')
+    .insert({
+      institution_id: institutionId,
+      user_id: user.id,
+      rating,
+      comment
+    });
 
-  inst.avaliacoes.unshift(novaAvaliacao);
-  inst.total_avaliacoes += 1;
+  if (error) {
+    console.error("Erro ao adicionar avaliação:", error);
+    return false;
+  }
 
-  // Recalculate average
-  const soma = inst.avaliacoes.reduce((acc, a) => acc + a.nota, 0);
-  inst.media = Math.round((soma / inst.avaliacoes.length) * 10) / 10;
-
-  return { ...inst };
+  return true;
 }
 
-export function getDistribuicaoNotas(avaliacoes: Avaliacao[]): number[] {
+export function getDistribuicaoNotas(avaliacoes: any[]): number[] {
   const dist = [0, 0, 0, 0, 0];
+  if (!avaliacoes) return dist;
   avaliacoes.forEach((a) => {
-    if (a.nota >= 1 && a.nota <= 5) dist[a.nota - 1]++;
+    if (a.rating >= 1 && a.rating <= 5) dist[a.rating - 1]++;
   });
   return dist;
 }
