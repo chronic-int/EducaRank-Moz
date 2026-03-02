@@ -20,6 +20,12 @@ export type Database = {
           full_name: string | null
           avatar_url: string | null
           role: "user" | "institution" | "admin"
+          reputation_score: number
+          total_reviews: number
+          helpful_votes_received: number
+          helpful_votes_given: number
+          reports_received: number
+          is_trusted: boolean
           created_at: string
         }
         Insert: {
@@ -27,6 +33,12 @@ export type Database = {
           full_name?: string | null
           avatar_url?: string | null
           role?: "user" | "institution" | "admin"
+          reputation_score?: number
+          total_reviews?: number
+          helpful_votes_received?: number
+          helpful_votes_given?: number
+          reports_received?: number
+          is_trusted?: boolean
           created_at?: string
         }
         Update: {
@@ -34,6 +46,12 @@ export type Database = {
           full_name?: string | null
           avatar_url?: string | null
           role?: "user" | "institution" | "admin"
+          reputation_score?: number
+          total_reviews?: number
+          helpful_votes_received?: number
+          helpful_votes_given?: number
+          reports_received?: number
+          is_trusted?: boolean
           created_at?: string
         }
         Relationships: [
@@ -139,6 +157,76 @@ export type Database = {
           }
         ]
       }
+      review_votes: {
+        Row: {
+          id: string
+          review_id: string
+          voted_by: string
+          vote_type: "helpful" | "not_helpful"
+          created_at: string
+        }
+        Insert: {
+          review_id: string
+          voted_by: string
+          vote_type: "helpful" | "not_helpful"
+          created_at?: string
+        }
+        Update: {
+          vote_type?: "helpful" | "not_helpful"
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_votes_voted_by_fkey"
+            columns: ["voted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      review_reports: {
+        Row: {
+          id: string
+          review_id: string
+          reported_by: string
+          reason: string
+          status: "pending" | "reviewed" | "dismissed"
+          created_at: string
+        }
+        Insert: {
+          review_id: string
+          reported_by: string
+          reason: string
+          status?: "pending" | "reviewed" | "dismissed"
+          created_at?: string
+        }
+        Update: {
+          status?: "pending" | "reviewed" | "dismissed"
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_reports_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "review_reports_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -147,7 +235,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      vote_type: "helpful" | "not_helpful"
+      report_status: "pending" | "reviewed" | "dismissed"
     }
     CompositeTypes: {
       [_ in never]: never

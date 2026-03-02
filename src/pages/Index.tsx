@@ -16,8 +16,6 @@ import { useAuth } from "@/contexts/AuthContext";
 const tiposFiltro = ["Todos", "Universidade", "Instituto", "Escola Secundária"];
 
 const Index = () => {
-  const [filtroTipo, setFiltroTipo] = useState("Todos");
-  const [busca, setBusca] = useState("");
   const { user } = useAuth();
 
   const { data: rawInstituicoes, isLoading } = useQuery({
@@ -25,26 +23,23 @@ const Index = () => {
     queryFn: getInstituicoes,
   });
 
-  const instituicoes = useMemo(() => {
+  const topInstituicoes = useMemo(() => {
     if (!rawInstituicoes) return [];
-    let list = [...rawInstituicoes];
-    if (filtroTipo !== "Todos") list = list.filter((i) => i.type === filtroTipo);
-    if (busca.trim()) list = list.filter((i) => i.name.toLowerCase().includes(busca.toLowerCase()));
-    return list;
-  }, [rawInstituicoes, filtroTipo, busca]);
+    return [...rawInstituicoes].sort((a, b) => b.average_rating - a.average_rating).slice(0, 5);
+  }, [rawInstituicoes]);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* Hero Banner — compact */}
-      <section className="hero-gradient text-primary-foreground py-10 md:py-14">
+      {/* Hero Banner */}
+      <section className="hero-gradient text-primary-foreground py-16 md:py-24">
         <div className="container text-center">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4 text-sm font-medium"
+            className="inline-flex items-center gap-2 bg-primary-foreground/10 backdrop-blur-sm rounded-full px-4 py-1.5 mb-6 text-sm font-medium"
           >
             <BarChart3 className="h-4 w-4" />
             Plataforma de Ranking Educacional
@@ -53,127 +48,101 @@ const Index = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.45 }}
-            className="text-2xl md:text-4xl font-extrabold tracking-tight mb-3"
+            className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6"
           >
-            Ranking Educacional da<br />Cidade de Maputo
+            O Futuro da Educação na<br />Cidade de Maputo
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.45 }}
-            className="text-primary-foreground/80 text-base md:text-lg max-w-xl mx-auto mb-5"
+            className="text-primary-foreground/80 text-lg md:text-xl max-w-2xl mx-auto mb-8"
           >
-            Avalie e compare instituições de ensino. Ajude a comunidade estudantil.
+            A plataforma líder para avaliar, comparar e descobrir as melhores instituições de ensino. Tome decisões informadas com base em experiências reais.
           </motion.p>
 
-          {!user && (
-            <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="flex items-center justify-center gap-3"
-            >
-              <Button size="lg" variant="secondary" asChild className="font-semibold shadow-lg">
-                <Link to="/registar">
-                  Criar Conta Grátis <ArrowRight className="ml-1 h-4 w-4" />
-                </Link>
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <Button size="lg" variant="secondary" asChild className="font-bold shadow-xl h-12 px-8">
+              <Link to="/instituicoes">
+                Explorar Instituições <Search className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+            {!user && (
+              <Button size="lg" variant="ghost" asChild className="text-primary-foreground border border-primary-foreground/20 hover:bg-primary-foreground/10 h-12 px-8 font-semibold">
+                <Link to="/registar">Criar Conta Grátis</Link>
               </Button>
-              <Button size="lg" variant="ghost" asChild className="text-primary-foreground border border-primary-foreground/20 hover:bg-primary-foreground/10">
-                <Link to="/login">Entrar</Link>
-              </Button>
-            </motion.div>
-          )}
+            )}
+          </motion.div>
         </div>
       </section>
 
-      {/* Filters & Search */}
-      <section className="container -mt-6 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35, duration: 0.4 }}
-          className="bg-card rounded-xl card-shadow p-5 flex flex-col md:flex-row gap-4 items-center"
-        >
-          <div className="flex gap-2 flex-wrap">
-            {tiposFiltro.map((tipo) => (
-              <Button
-                key={tipo}
-                size="sm"
-                variant={filtroTipo === tipo ? "default" : "outline"}
-                onClick={() => setFiltroTipo(tipo)}
-                className="text-sm"
-              >
-                {tipo}
-              </Button>
-            ))}
+      {/* Highlights Section */}
+      <section className="container py-20">
+        <div className="flex items-center justify-between mb-10">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              Melhores Avaliadas
+            </h2>
+            <p className="text-muted-foreground mt-1">Instituições em destaque na Cidade de Maputo.</p>
           </div>
-          <div className="relative flex-1 w-full md:max-w-sm ml-auto">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar instituição..."
-              value={busca}
-              onChange={(e) => setBusca(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </motion.div>
-      </section>
+          <Button variant="ghost" asChild className="hidden sm:flex group">
+            <Link to="/instituicoes" className="flex items-center gap-1">
+              Ver Ranking Completo <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </Button>
+        </div>
 
-      {/* Ranking Table */}
-      <section className="container py-10">
-        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-          <GraduationCap className="h-5 w-5 text-primary" />
-          Ranking das Instituições
-        </h2>
-
-        <div className="bg-card rounded-xl card-shadow overflow-hidden">
+        <div className="bg-card rounded-2xl card-shadow overflow-hidden border">
           {/* Table Header */}
-          <div className="hidden md:grid grid-cols-[60px_1fr_160px_80px_120px] gap-4 px-6 py-3 border-b bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            <span>Pos.</span>
+          <div className="hidden md:grid grid-cols-[80px_1fr_180px_100px_140px] gap-4 px-8 py-4 border-b bg-muted/30 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+            <span>Posição</span>
             <span>Instituição</span>
             <span>Tipo</span>
-            <span>Média</span>
-            <span className="text-right">Avaliações</span>
+            <span>Nota</span>
+            <span className="text-right">Avaliadores</span>
           </div>
 
           {isLoading ? (
-            <div className="p-6 space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
+            <div className="p-8 space-y-6">
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-4 items-center">
-                  <Skeleton className="h-10 w-10 rounded-full" />
+                  <Skeleton className="h-12 w-12 rounded-full" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-[40%]" />
                     <Skeleton className="h-3 w-[20%]" />
                   </div>
-                  <Skeleton className="h-10 w-20" />
+                  <Skeleton className="h-12 w-24" />
                 </div>
               ))}
             </div>
-          ) : instituicoes.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">Nenhuma instituição encontrada.</div>
           ) : (
-            instituicoes.map((inst, idx) => (
+            topInstituicoes.map((inst, idx) => (
               <motion.div
                 key={inst.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.04, duration: 0.35 }}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05, duration: 0.4 }}
               >
                 <Link
                   to={`/instituicao/${inst.id}`}
-                  className={`grid grid-cols-1 md:grid-cols-[60px_1fr_160px_80px_120px] gap-2 md:gap-4 px-6 py-4 border-b last:border-b-0 items-center hover:bg-muted/40 transition-colors ${idx < 3 ? "bg-accent/30" : ""
-                    }`}
+                  className={`grid grid-cols-1 md:grid-cols-[80px_1fr_180px_100px_140px] gap-2 md:gap-4 px-8 py-6 border-b last:border-b-0 items-center hover:bg-primary/5 transition-all group`}
                 >
-                  <div className="flex items-center gap-3 md:block">
+                  <div className="flex items-center gap-3">
                     <PosicaoBadge posicao={idx + 1} />
-                    <span className="md:hidden font-semibold text-foreground">{inst.name}</span>
+                    <span className="md:hidden font-bold text-foreground group-hover:text-primary transition-colors text-lg">{inst.name}</span>
                   </div>
                   <div className="hidden md:flex flex-col">
-                    <span className="font-semibold text-foreground">{inst.name}</span>
-                    <span className="text-xs text-muted-foreground">{inst.district}</span>
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors text-lg leading-tight">{inst.name}</span>
+                    <span className="text-xs text-muted-foreground mt-0.5">{inst.district}</span>
                   </div>
-                  <div>
-                    <span className="text-xs md:text-sm font-medium text-muted-foreground bg-secondary px-2.5 py-1 rounded-full">
+                  <div className="flex items-center">
+                    <span className="text-xs font-bold text-muted-foreground bg-muted px-3 py-1 rounded-full">
                       {inst.type}
                     </span>
                   </div>
@@ -181,13 +150,19 @@ const Index = () => {
                     <NotaBadge nota={inst.average_rating} size="sm" />
                     <span className="md:hidden"><StarRating rating={inst.average_rating} size="sm" /></span>
                   </div>
-                  <div className="text-sm text-muted-foreground md:text-right">
+                  <div className="text-sm font-medium text-muted-foreground md:text-right">
                     {inst.total_reviews} avaliações
                   </div>
                 </Link>
               </motion.div>
             ))
           )}
+        </div>
+
+        <div className="mt-10 text-center sm:hidden">
+          <Button variant="outline" asChild className="w-full h-11">
+            <Link to="/instituicoes">Ver Ranking Completo</Link>
+          </Button>
         </div>
       </section>
 

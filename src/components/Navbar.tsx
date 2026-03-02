@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const Navbar = () => {
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   const links = [
     { to: "/", label: "Ranking" },
@@ -21,8 +21,8 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 font-bold text-xl tracking-tight text-primary">
-          <GraduationCap className="h-7 w-7" />
+        <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-primary">
+          <img src="/logo.png" alt="EducaRank Moz Logo" className="h-10 w-10 object-contain" />
           EducaRank Moz
         </Link>
 
@@ -33,8 +33,8 @@ const Navbar = () => {
               key={link.to}
               to={link.to}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive(link.to)
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
             >
               {link.label}
@@ -47,8 +47,8 @@ const Navbar = () => {
                 <Link
                   to="/dashboard"
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${isActive("/dashboard")
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                     }`}
                 >
                   Painel
@@ -99,8 +99,8 @@ const Navbar = () => {
                 to={link.to}
                 onClick={() => setMenuOpen(false)}
                 className={`block px-4 py-2.5 rounded-md text-sm font-medium mt-1 ${isActive(link.to)
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
               >
                 {link.label}

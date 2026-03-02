@@ -1,219 +1,298 @@
-# 🚀 TASK – Evolução Estrutural do EducaRank Moz
+# 🚀 TASK – Implementação do Sistema de Reputação de Usuário  
+## Projeto: EducaRank Moz
 
-## 🎯 Contexto
+---
 
-EducaRank Moz é uma plataforma de ranking educacional focada inicialmente na Cidade de Maputo.
+# 🎯 CONTEXTO
 
-Stack:
+EducaRank Moz é uma plataforma educacional com:
+
 - Frontend: React + TypeScript (Vite)
-- Backend: Supabase (PostgreSQL + Auth)
-- Auth: Google Auth ativo
+- Backend: Supabase (PostgreSQL + Auth + RLS)
+- Auth: Google Auth
 - Deploy: Vercel
 - Repositório público
 
-A partir de agora, o projeto deve evoluir com arquitetura profissional, foco em segurança e experiência do usuário.
+Objetivo agora:
 
-Você também será responsável pelo UI/UX Design do sistema.
+👉 Implementar SISTEMA COMPLETO DE REPUTAÇÃO DE USUÁRIO  
+👉 Integrar com reviews  
+👉 Tornar a página institucional totalmente funcional  
+👉 Manter segurança via RLS  
+👉 Priorizar experiência do utilizador  
 
-Prioridade máxima: EXPERIÊNCIA DO UTILIZADOR.
-
----
-
-# 🔐 1️⃣ ADMIN INICIAL
-
-Criar um usuário administrador no banco com:
-
-Email:
-admin.educamz@gmail.com
-
-Role:
-admin
-
-⚠️ A senha NÃO deve ser hardcoded no código ou repositório.
-A senha deve ser criada manualmente via Supabase Auth ou via variável de ambiente segura.
-
-O admin deve:
-- Ter acesso total
-- Poder alterar roles
-- Verificar instituições
-- Moderar reviews
-- Criar e editar blogs
+Você também será responsável pelo UI/UX dessa funcionalidade.
 
 ---
 
-# 🧱 2️⃣ BANCO DE DADOS – SUPABASE + RLS
+# 🏅 1️⃣ OBJETIVO DO SISTEMA DE REPUTAÇÃO
 
-Gerar script SQL completo com:
+Criar um sistema que:
 
-## Tabelas
+- Valorize usuários ativos
+- Reduza spam
+- Destaque reviews úteis
+- Incentive comportamento saudável
 
-profiles  
-institutions  
-reviews  
-blog_posts  
-moderation_flags  
+O sistema deve ser automático e baseado em ações do usuário.
 
-Aplicar:
-- Constraints
-- Índices
-- Unique (user_id + institution_id)
-- Foreign Keys corretas
-- created_at e updated_at automáticos
+---
+
+# 🧱 2️⃣ ALTERAÇÕES NO BANCO DE DADOS (SQL COMPLETO)
+
+Gerar script SQL profissional contendo:
+
+---
+
+## 🔹 Atualização da tabela `profiles`
+
+Adicionar colunas:
+
+- reputation_score (integer default 0)
+- total_reviews (integer default 0)
+- helpful_votes_received (integer default 0)
+- helpful_votes_given (integer default 0)
+- reports_received (integer default 0)
+- is_trusted (boolean default false)
+
+Criar índices necessários.
+
+---
+
+## 🔹 Nova tabela `review_votes`
+
+Campos:
+
+- id (uuid, pk)
+- review_id (fk reviews)
+- voted_by (fk profiles)
+- vote_type (enum: helpful, not_helpful)
+- created_at
+
+Constraint:
+
+- UNIQUE (review_id, voted_by)
+
+Criar índices.
+
+---
+
+## 🔹 Nova tabela `review_reports`
+
+Campos:
+
+- id
+- review_id
+- reported_by
+- reason
+- status (pending, reviewed, dismissed)
+- created_at
+
+Constraint:
+
+- UNIQUE (review_id, reported_by)
 
 ---
 
 # 🔐 3️⃣ RLS OBRIGATÓRIO
 
-Criar políticas para:
+Criar policies para:
+
+---
 
 ## 👤 User
-- Pode ler instituições
-- Pode criar 1 review por instituição
-- Pode editar apenas sua review
-- Pode editar próprio perfil
-- Pode ver perfis públicos
 
-## 🏫 Institution
-- Pode editar apenas sua própria instituição
-- Só se verified = true
-- Pode ver reviews da sua instituição
-- Não pode alterar ranking manualmente
+Pode:
+
+- Criar voto (1 por review)
+- Remover seu próprio voto
+- Criar denúncia
+- Ver reviews
+- Ver reputação pública
+
+Não pode:
+
+- Alterar reputation_score manualmente
+- Alterar dados de outros usuários
+
+---
 
 ## 🛡 Admin
-- Acesso total
-- Pode verificar instituições
-- Pode publicar blogs
-- Pode moderar reviews
-- Pode alterar roles
+
+Pode:
+
+- Atualizar reputation_score
+- Marcar is_trusted
+- Resolver denúncias
+- Remover reviews
+- Remover votos
 
 ---
 
-# 📊 4️⃣ DASHBOARDS
+# 🧠 4️⃣ LÓGICA DE REPUTAÇÃO (FUNÇÕES SQL)
 
-Cada nível terá dashboard próprio:
+Criar função SQL que atualiza reputação automaticamente quando:
 
-## 👤 User Dashboard
-- Editar perfil
-- Histórico de avaliações
-- Atividade recente
+- Usuário cria review → +5 pontos
+- Review recebe voto helpful → +2 pontos
+- Review recebe voto not_helpful → -1 ponto
+- Review é denunciada e confirmada → -5 pontos
 
-## 🏫 Institution Dashboard
-- Editar informações institucionais
-- Upload de banner e logo
-- Estatísticas de avaliações
-- Distribuição de notas
-- Solicitar verificação
+Criar trigger:
 
-## 🛡 Admin Dashboard
-- Gerenciar usuários
-- Gerenciar instituições
-- Aprovar verificação
-- Moderar reviews
-- Criar e editar blog
+Após insert/delete em review_votes  
+Após resolução de denúncia  
+
+Atualizar:
+
+- reputation_score
+- helpful_votes_received
+- total_reviews
+- is_trusted (true se reputation_score >= 50)
 
 ---
 
-# 🌐 5️⃣ MELHORIAS NA ABA INSTITUIÇÕES
+# 🎨 5️⃣ FRONTEND – IMPLEMENTAÇÃO
 
-Transformar em sistema moderno de descoberta:
+## 🔹 Atualizar Página Institucional (ABA AVALIAÇÕES)
 
-- Barra de pesquisa dinâmica
-- Filtros inteligentes
-- Cards com imagem, nome e descrição
-- Layout responsivo
-- Paginação ou infinite scroll
+Cada review deve mostrar:
 
-Ao clicar:
-Abrir página estilo perfil institucional:
+- Nome do usuário
+- Badge de reputação
+- Score visual
+- Botão 👍 Útil
+- Botão 👎 Não útil
+- Botão Denunciar
 
-- Banner grande
-- Logo destacada
+Se usuário já votou:
+- Mostrar estado ativo
+
+Se usuário não autenticado:
+- Botões desativados
+
+---
+
+## 🔹 Perfil do Usuário (Página Pública)
+
+Criar página:
+
+/profile/:id
+
+Mostrar:
+
 - Nome
-- Tipo
-- Descrição
-- Informações de matrícula
-- Estatísticas
+- Avatar
+- Bio
+- Instituição onde estudou
+- Reputation Score
+- Badge (Novo, Contribuidor, Confiável)
+- Total de reviews
+- Lista de reviews feitas
+
+Perfil deve ser público.
+
+---
+
+# 🏆 6️⃣ BADGES DE REPUTAÇÃO
+
+Definir:
+
+- 0–19 → Novo membro
+- 20–49 → Contribuidor ativo
+- 50+ → Usuário confiável
+
+Mostrar badge ao lado do nome em:
+
 - Reviews
-- Seção visual moderna
-
-Design dinâmico e informativo.
-
----
-
-# 📰 6️⃣ BLOG
-
-Separado dos perfis institucionais.
-
-Apenas Admin pode:
-- Criar
-- Editar
-- Publicar
-- Remover
-
-Blog deve ter:
-- Layout editorial moderno
-- Destaques
-- Leitura confortável
-- Estrutura SEO friendly
+- Perfil público
+- Dashboard
 
 ---
 
-# 🎨 7️⃣ UI/UX – VOCÊ É O DESIGNER
+# 🎨 7️⃣ UX – BOAS PRÁTICAS OBRIGATÓRIAS
 
-Você é responsável pelo design da aplicação.
+Você é responsável pelo design dessa funcionalidade.
 
-Aplicar boas práticas modernas:
+Aplicar:
 
-- Layout minimalista e institucional
-- Hierarquia visual clara
 - Microinterações suaves
-- Feedback visual em ações
-- Skeleton loading states
-- Responsividade total
-- Acessibilidade básica (contraste adequado)
-- Espaçamento consistente
-- Design System coerente
+- Feedback visual ao votar
+- Loading states
+- Animação leve ao ganhar reputação
+- Tooltip explicando sistema de reputação
+- Design limpo e moderno
+- Layout responsivo
+- Hierarquia clara
+- Evitar poluição visual
 
-Prioridade absoluta:
-Experiência fluida e intuitiva.
-
----
-
-# 📁 8️⃣ REPOSITÓRIO
-
-- Adicionar .env ao .gitignore
-- Garantir que nenhuma chave sensível esteja versionada
-- Atualizar README.md
-
-README deve conter:
-- Objetivo do projeto
-- Impacto social
-- Stack
-- Estrutura de permissões
-- Como rodar localmente
-- Variáveis necessárias
-- Visão futura
+Prioridade: experiência fluida e intuitiva.
 
 ---
 
-# 📈 9️⃣ BOAS PRÁTICAS OBRIGATÓRIAS
+# 📊 8️⃣ ORDENAÇÃO INTELIGENTE DE REVIEWS
 
-- Sempre atualizar versão do projeto
-- Separação clara de responsabilidades
-- Camada de services no frontend
-- Nunca lógica crítica apenas no frontend
-- Segurança via RLS
-- Indexação para performance
-- Código limpo e escalável
+Na aba Avaliações:
+
+Permitir ordenar por:
+
+- Mais recentes
+- Mais úteis
+- Maior reputação do autor
+
+Reviews de usuários confiáveis devem ter leve destaque visual.
+
+---
+
+# 🧩 9️⃣ ORGANIZAÇÃO DE CÓDIGO
+
+No frontend:
+
+Criar:
+
+- services/reputationService.ts
+- services/voteService.ts
+- services/reportService.ts
+
+Separar lógica de UI.
+
+Não colocar lógica crítica apenas no frontend.
+
+---
+
+# 🔒 10️⃣ SEGURANÇA
+
+- Garantir integridade via constraints
+- Garantir integridade via RLS
+- Não permitir manipulação manual de reputação
+- Usar funções SQL para cálculos
 
 ---
 
 # 🎯 OBJETIVO FINAL
 
-Transformar EducaRank Moz em:
+Após implementação:
 
-- Plataforma educacional confiável
-- Sistema seguro
-- Base escalável
-- Experiência moderna e profissional
-- Estrutura pronta para futura integração com FastAPI
+- Usuários podem votar em reviews
+- Sistema calcula reputação automaticamente
+- Perfis exibem reputação
+- Reviews são ordenadas por utilidade
+- Sistema é seguro
+- Página institucional funciona completamente
+- UX é moderna e profissional
+
+---
+
+# 🚀 IMPORTANTE
+
+Sempre atualizar versão do projeto.
+
+Garantir que o sistema funcione em produção no Vercel.
+
+Testar:
+
+- Criação de review
+- Votação
+- Atualização de reputação
+- Exibição correta na interface
+- Segurança RLS

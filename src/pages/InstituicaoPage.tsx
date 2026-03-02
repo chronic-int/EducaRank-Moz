@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
 import { ArrowLeft, MapPin, Users, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +10,8 @@ import Navbar from "@/components/Navbar";
 import NotaBadge from "@/components/NotaBadge";
 import StarRating from "@/components/StarRating";
 import AvaliacaoModal from "@/components/AvaliacaoModal";
+import ReputationBadge from "@/components/ReputationBadge";
+import VoteButtons from "@/components/VoteButtons";
 import { getInstituicaoById, getDistribuicaoNotas } from "@/services/instituicaoService";
 
 const InstituicaoPage = () => {
@@ -137,14 +140,40 @@ const InstituicaoPage = () => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + i * 0.06, duration: 0.3 }}
-                    className="border rounded-lg p-4"
+                    className={cn(
+                      "border rounded-xl p-5 mb-4 transition-all hover:border-primary/30 hover:bg-muted/10",
+                      av.profile?.is_trusted && "border-primary/20 bg-primary/[0.02]"
+                    )}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-sm">{av.profile?.full_name || "Utilizador"}</span>
-                      <span className="text-xs text-muted-foreground">{new Date(av.created_at).toLocaleDateString()}</span>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Link to={`/profile/${av.user_id}`} className="hover:opacity-80 transition-opacity">
+                          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center overflow-hidden border">
+                            {av.profile?.avatar_url ? (
+                              <img src={av.profile.avatar_url} alt={av.profile.full_name} className="w-full h-full object-cover" />
+                            ) : (
+                              <Users className="h-5 w-5 text-muted-foreground" />
+                            )}
+                          </div>
+                        </Link>
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <Link to={`/profile/${av.user_id}`} className="font-bold text-sm hover:text-primary transition-colors">
+                              {av.profile?.full_name || "Utilizador"}
+                            </Link>
+                            <ReputationBadge score={av.profile?.reputation_score || 0} />
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{new Date(av.created_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <NotaBadge nota={av.rating} size="sm" />
                     </div>
-                    <StarRating rating={av.rating} size="sm" />
-                    {av.comment && <p className="text-sm text-muted-foreground mt-2">{av.comment}</p>}
+
+                    <p className="text-sm text-foreground/90 leading-relaxed mb-1">{av.comment || "Sem comentário."}</p>
+
+                    <VoteButtons reviewId={av.id} initialHelpfulCount={0} />
                   </motion.div>
                 ))
               )}
